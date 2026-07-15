@@ -61,28 +61,28 @@ Los objetivos específicos son:
 
 ### TF-IDF
 
-Para un término \(t\), un documento \(d\) y un corpus \(D\):
+Para un término $t$, un documento $d$ y un corpus $D$:
 
-\[
+$$
 \operatorname{tfidf}(t,d)
 =
 \operatorname{tf}(t,d)
 \cdot
 \operatorname{idf}(t,D)
-\]
+$$
 
 con
 
-\[
+$$
 \operatorname{tf}(t,d)
 =
 \frac{f(t,d)}
 {\max_{t' \in d} f(t',d)}
-\]
+$$
 
 e
 
-\[
+$$
 \operatorname{idf}(t,D)
 =
 \log
@@ -90,34 +90,34 @@ e
 \frac{|D|}
 {|\{d \in D : t \in d\}|}
 \right).
-\]
+$$
 
 ### LSA
 
-LSA parte de una matriz término-documento \(A\) y aplica la descomposición en valores singulares:
+LSA parte de una matriz término-documento $A$ y aplica la descomposición en valores singulares:
 
-\[
+$$
 A = U\Sigma V^\top.
-\]
+$$
 
-La representación reducida conserva las \(k\) componentes asociadas a los valores singulares más importantes:
+La representación reducida conserva las $k$ componentes asociadas a los valores singulares más importantes:
 
-\[
+$$
 A_k = U_k\Sigma_kV_k^\top.
-\]
+$$
 
 Esta aproximación reduce el ruido y proyecta los documentos en un espacio semántico de menor dimensión.
 
 ### LDA
 
-LDA representa cada documento mediante una distribución sobre \(K\) tópicos:
+LDA representa cada documento mediante una distribución sobre $K$ tópicos:
 
-\[
+$$
 \theta_d =
 (\theta_{d,1},\ldots,\theta_{d,K}),
-\]
+$$
 
-donde \(\theta_{d,k}\) es el peso del tópico \(k\) en el documento \(d\).
+donde $\theta_{d,k}$ es el peso del tópico $k$ en el documento $d$.
 
 La implementación manual utiliza **muestreo de Gibbs colapsado** para estimar las asignaciones de tópicos y las distribuciones documento-tópico y tópico-palabra.
 
@@ -127,7 +127,7 @@ Skip-gram aprende embeddings de palabras prediciendo términos de contexto a par
 
 Para construir un vector documental se emplea una media ponderada por TF-IDF:
 
-\[
+$$
 v_D =
 \frac{
 \sum_{w \in D}
@@ -136,7 +136,7 @@ v_D =
 \sum_{w \in D}
 \operatorname{tfidf}(w,D)
 }.
-\]
+$$
 
 ---
 
