@@ -115,7 +115,7 @@ Skip-gram learns word embeddings by predicting context terms from a central word
 A document vector is built using a TF-IDF-weighted average of word embeddings:
 
 $$
-v_D =\frac{\sum_{w \in D}tfidf(w,D)\,v_w}{\sum_{w \in D}\operatorname{tfidf}(w,D)}.
+v_D =\frac{\sum_{w \in D}tfidf(w,D)\,v_w}{\sum_{w \in D}tfidf(w,D)}.
 $$
 
 ---
