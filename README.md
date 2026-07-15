@@ -70,22 +70,13 @@ $$
 con
 
 $$
-\operatorname{tf}(t,d)
-=
-\frac{f(t,d)}
-{\max_{t' \in d} f(t',d)}
+tf(t,d) =\frac{f(t,d)}{\max_{t' \in d} f(t',d)}
 $$
 
 e
 
 $$
-\operatorname{idf}(t,D)
-=
-\log
-\left(
-\frac{|D|}
-{|\{d \in D : t \in d\}|}
-\right).
+idf(t,D)=\log\left(\frac{|D|}{|\{d \in D : t \in d\}|}\right).
 $$
 
 ### LSA
@@ -109,8 +100,7 @@ Esta aproximación reduce el ruido y proyecta los documentos en un espacio semá
 LDA representa cada documento mediante una distribución sobre $K$ tópicos:
 
 $$
-\theta_d =
-(\theta_{d,1},\ldots,\theta_{d,K}),
+\theta_d =(\theta_{d,1},\ldots,\theta_{d,K}),
 $$
 
 donde $\theta_{d,k}$ es el peso del tópico $k$ en el documento $d$.
@@ -124,14 +114,7 @@ Skip-gram aprende embeddings de palabras prediciendo términos de contexto a par
 Para construir un vector documental se emplea una media ponderada por TF-IDF:
 
 $$
-v_D =
-\frac{
-\sum_{w \in D}
-\operatorname{tfidf}(w,D)\,v_w
-}{
-\sum_{w \in D}
-\operatorname{tfidf}(w,D)
-}.
+v_D =\frac{\sum_{w \in D}tfidf(w,D)\,v_w}{\sum_{w \in D}\operatorname{tfidf}(w,D)}.
 $$
 
 ---
