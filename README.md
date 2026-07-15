@@ -1,149 +1,485 @@
-# Vector Representations of Text in Classification Problems
+# Representaciones vectoriales de texto
 
-## Introduction
+Comparación teórica y empírica de **TF-IDF**, **Latent Semantic Analysis (LSA)**, **Latent Dirichlet Allocation (LDA)** y **Skip-gram with Negative Sampling (SG-NS)** para la representación y clasificación de documentos textuales.
 
-This repository contains the code developed in Bachelor’s Thesis in Mathematics at the Department of Mathematics of the Universitat Autònoma de Barcelona (2025),  devoted to the study of several text vectorization techniques for classification tasks. The main objective of the thesis is to formalize and mathematically analyze the process of **vector representation of textual documents**, comparing three fundamental methods: **TF-IDF**, **LSA**, and **LDA**. In addition to its theoretical foundation, the project applies these representations to several text datasets (spam emails, Twitter messages, and the *20 Newsgroups* collection) in order to evaluate their effectiveness in binary classification through supervised models.
-
-Through this combined approach, the thesis provides a comparison between a model based on the original vocabulary (TF-IDF) and two latent or “thematic” models that reduce dimensionality (LSA and LDA). The available code makes it possible to reproduce the experiments conducted, including text preprocessing, vector transformation, and the training and evaluation of classifiers for each representation.
-
-## Vector Representations Used
-
-This section presents, in a clear and formal manner, the vector representation techniques implemented in the thesis. Each method converts text documents into numerical vectors by following different approaches, either based on the original words or on latent topics inferred from the texts.
-
-### TF-IDF (Term Frequency - Inverse Document Frequency)
-
-**TF-IDF** is a classical text representation technique that assigns each term a numerical weight proportional to its importance in a specific document and in the overall corpus. This importance is computed as the product of two components:
-
-* **Term Frequency (TF):** measures the recurrence of term $t$ within document $d$:
-
-$$
-tf(t,d) = \frac{f(t,d)}{\max {f(t',d) \mid t' \in d}}
-$$
-
-where ( f(t,d) ) is the frequency of term $t$ in document $d$, and the denominator is the maximum frequency among all terms in the document.
-
-* **Inverse Document Frequency (IDF):** measures the rarity of the term in the collection of documents $D$:
-
-$$
-\mathrm{idf}(t, D) = \log\left( \frac{|D|}{ |{ d \in D : t \in d }|} \right)
-$$
-
-where $|D|$ is the total number of documents, and the denominator is the number of documents in which term $t$ appears. The value 1 is often added in practice to avoid divisions by zero.
-
-* **TF-IDF Weight:** is the product of the two previous components:
-
-$$
-\mathrm{tf\text{-}idf}(t, d) = \mathrm{tf}(t, d) \cdot \mathrm{idf}(t, D)
-$$
-
-In this way, highly specific terms (frequent in one document but infrequent in the overall corpus) receive a high weight. By contrast, terms that are very common across all documents are penalized.
-
-Each document is represented as a vector in a space whose dimensionality is equal to the size of the vocabulary, where each component of the vector is the TF-IDF value associated with a term. This representation preserves the original granularity of the text and is particularly suitable for classification algorithms capable of handling high-dimensional spaces.
-
-### LSA (Latent Semantic Analysis via Truncated SVD)
-
-**LSA**, or *Latent Semantic Analysis*, is an algebraic method that makes it possible to obtain latent and more compact representations of textual documents. The process begins by constructing a term-document matrix $A \in \mathbb{R}^{m \times n}$, where each row represents a term, each column represents a document, and the entries are weights (typically TF-IDF values) that reflect the importance of the term in the document.
-
-Next, a **Singular Value Decomposition (SVD)** is applied to the matrix $A$:
-
-$$
-A = U \Sigma V^T
-$$
-
-where:
-
-* $U \in \mathbb{R}^{m \times r}$ contains the left singular vectors (associated with terms),
-* $\Sigma \in \mathbb{R}^{r \times r}$ is a diagonal matrix containing the nonnegative singular values in descending order,
-* $V^T \in \mathbb{R}^{r \times n}$ contains the right singular vectors (associated with documents),
-* and $r$ is the rank of the original matrix $A$.
-
-To reduce dimensionality, this decomposition is truncated by retaining only the first $k$ components, with $k \ll r$:
-
-$$
-A_k = U_k \Sigma_k V_k^T
-$$
-
-According to the **Eckart–Young theorem**, $A_k$ is the best rank-$k$ approximation to the matrix $A$ in the Frobenius norm, and it preserves the principal semantic structures of the corpus.
-
-In this latent space of dimension $k$:
-
-* Each document is expressed as $\hat{d}_i = \Sigma_k^{-1} U_k^T d_i$, where $d_i$ is the document representation, typically based on TF-IDF weights.
-
-This new representation projects documents and terms into a reduced semantic space, where documents with similar meaning, even if they do not share literal words, are located closer to one another. Thus, **LSA captures latent and synonymous relationships between words and documents**, providing more compact vector representations that may improve computational efficiency and model generalization.
-
-### LDA (Latent Dirichlet Allocation)
-
-**LDA**, or *Latent Dirichlet Allocation*, is a probabilistic generative model that represents documents through latent topics. The fundamental idea of the model is to assume that each document $d$ is generated by a combination of $k$ latent topics, and that each topic $z_k$ is a probability distribution over the words in the vocabulary.
-
-The model assumes the following generative process:
-
-1. For each topic $k = 1, \dots, K$, a word distribution $\phi^k \sim \text{Dir}(\beta)$ is generated, where $\phi^k \in \mathbb{R}^V$ and $V$ is the size of the vocabulary.
-2. For each document $d$:
-
-   * A topic distribution $\theta_d \sim \text{Dir}(\alpha)$ is generated, where $\theta_d \in \mathbb{R}^K$.
-   * For each word $w_n$ in document $d$:
-
-     * A latent topic $z_n \sim \text{Multinomial}(\theta_d)$ is selected,
-     * A word $w_n \sim \text{Multinomial}(\phi^{z_n})$ is then selected.
-
-In summary, the **latent variables** are:
-
-* $\theta_d$: vector of topic probabilities for document $d$,
-* $z_n$: topic assignment for the ( n )-th word of document $d$,
-* $\phi^k$: word distribution for topic $k$.
-
-During the inference process, for example through *Gibbs sampling* or *variational methods*, the posterior distributions $p(\theta_d \mid w_d)$ and $p(\phi^k \mid w_d)$ are estimated.
-
-Therefore, the final representation of a document is the vector $\theta_d \in \mathbb{R}^K$, which expresses the estimated proportion of each latent topic in the document. This **thematic representation** reduces the dimensionality of the document with respect to the original word space and captures **global semantic structures** of the corpus.
+El proyecto combina el desarrollo matemático de cada técnica con implementaciones propias, versiones optimizadas mediante librerías de alto nivel y experimentos reproducibles sobre dos corpus de características muy diferentes: **Sentiment140** y **arXiv**.
 
 ---
 
-**Note:** Both **LSA** and **LDA** are dimensionality reduction methods that extract semantic factors underlying the documents. LSA uses algebraic techniques such as truncated SVD, whereas LDA uses a probabilistic generative model based on Dirichlet distributions. By contrast, **TF-IDF** represents documents directly from the observable vocabulary, without considering latent topics. According to the results obtained in this thesis, although **TF-IDF** usually provides the best predictive performance, **LSA** and **LDA** offer more compact and semantically interpretable representations, which are especially useful in datasets with redundancy or high lexical correlation.
+## Descripción
 
-## CODE INSTRUCTIONS
+Los algoritmos de aprendizaje automático necesitan entradas numéricas. Por tanto, antes de clasificar, agrupar o recuperar documentos, es necesario transformar el texto en vectores que conserven la información relevante del corpus.
 
-### System Requirements
+Este proyecto analiza cuatro familias de representaciones:
 
-* **Python 3.8+**: It is recommended to have a recent version of Python installed (3.8 or later).
-* **Python libraries**: The following dependencies must be installed, with versions equivalent to those used in the thesis:
+- **TF-IDF:** representación estadística, dispersa y directamente interpretable.
+- **LSA:** representación algebraica obtenida mediante reducción dimensional con SVD.
+- **LDA:** representación probabilística de los documentos como mezclas de tópicos.
+- **SG-NS:** embeddings neuronales de palabras agregados para construir vectores documentales densos.
 
-  * pandas (data manipulation)
-  * numpy (numerical operations)
-  * scikit-learn (TF-IDF vectorization, SVD, LDA, metrics, and validation)
-  * NLTK (text processing: tokenization and lemmatization; ensure the availability of resources such as *punkt* and *wordnet*)
-  * xgboost (implementation of the Gradient Boosting classifier)
-* **Other requirements**: No special hardware is required; execution is feasible on CPU. An Internet connection is needed the first time some scripts are executed in order to download data:
+La comparación no se limita al rendimiento predictivo. También se estudian:
 
-  * The SMS *spam* dataset is loaded directly from a public URL.
-  * Some *NLTK* resources, such as the tokenization model, will be automatically downloaded when `nltk.download(...)` is called within the scripts.
+- dimensionalidad;
+- dispersión;
+- memoria;
+- tiempo de construcción;
+- tiempo de entrenamiento del clasificador;
+- geometría del espacio vectorial;
+- interpretabilidad;
+- sensibilidad al dominio del corpus.
 
-### Step-by-step execution of the scripts
+---
 
-1. **Prepare the environment:** Download or clone this repository onto your computer. Make sure that all the required packages mentioned in the requirements section have been installed. If necessary, use `pip install` to install the dependencies.
-2. **Run the experiments with the *Spam Dataset*:** From the command line, navigate to the `spam/` directory and execute the three scripts in that folder:
+## Objetivos
 
-   * `TFIDF.py`
-   * `LSA.py`
-   * `LDA.py`
+El objetivo general es analizar, formalizar y comparar distintas técnicas de representación vectorial de textos desde una doble perspectiva: **teórica** y **experimental**.
 
-   These scripts will automatically load the SMS spam dataset from a public URL, preprocess the messages by removing emojis, applying lemmatization, and so forth, and then train a classification model to evaluate the representation. Each script performs 5-fold cross-validation by training a Gradient Boosting model (XGBoost) and displaying on screen the AUC-ROC metric obtained for the different folds.
-3. **Run the experiments with the *Twitter Dataset*:** Before executing these scripts, make sure that the data file `data/twitter_redut_Dataset.csv` is accessible. Then, from the command line, execute the three scripts in the `twitter/` directory:
+Los objetivos específicos son:
 
-   * `TFIDF.py`
-   * `LSA.py`
-   * `LDA.py`
+1. Formalizar matemáticamente TF-IDF, LSA, LDA y SG-NS.
+2. Implementar manualmente las operaciones principales de cada método.
+3. Comparar las implementaciones propias con versiones optimizadas de `scikit-learn`.
+4. Evaluar las representaciones mediante un clasificador común.
+5. Analizar el efecto del tipo de corpus sobre el rendimiento.
+6. Estudiar el compromiso entre precisión, coste, dimensionalidad e interpretabilidad.
+7. Comparar embeddings generales con embeddings entrenados en el dominio de aplicación.
 
-   Each of these scripts reads the CSV file containing tweets, applies the corresponding vectorization method (TF-IDF, LSA with truncated SVD, or LDA with a number of topics $k$ specified in the code), and trains a supervised classifier, primarily **Logistic Regression** in these experiments. Likewise, stratified 5-fold cross-validation is performed, and the mean **AUC-ROC** is computed to compare the performance of the different methods.
-4. **Run the experiments with the *20 Newsgroups Dataset*:** From the `newsgroups/` directory, execute the following scripts:
+---
 
-   * `TFIDF.py`
-   * `LSA.py`
-   * `LDA.py`
+## Técnicas analizadas
 
-   These scripts will download the *20 Newsgroups* corpus, if it is not already cached, through *scikit-learn*. The problem will be converted into a binary classification task by defining a target label, for example, identifying documents related to sports topics. Each script will generate the corresponding vector representation of the documents, whether TF-IDF, SVD-based reduction to latent components, or topic distributions through LDA, and will then train a classification model, specifically **XGBoost** for this dataset. Finally, the mean AUC-ROC obtained under cross-validation will be displayed.
-5. **Analysis of results:** Once all scripts have been executed, the AUC-ROC metrics may be compared in order to determine which vector representation performs best on each dataset. In general, it is observed that the TF-IDF-based representation tends to provide the best predictive performance, although the latent representations, namely LSA and LDA, achieve comparable results while offering the advantage of reducing dimensionality and capturing latent semantic relationships.
+| Técnica | Enfoque | Representación resultante | Principal ventaja | Principal limitación |
+|---|---|---|---|---|
+| TF-IDF | Estadístico | Vector disperso de dimensión igual al vocabulario | Simplicidad e interpretación directa | Alta dimensionalidad y dispersión |
+| LSA | Algebraico | Vector denso en un espacio latente | Reduce dimensionalidad y captura coocurrencias | Componentes menos interpretables |
+| LDA | Probabilístico | Distribución de tópicos por documento | Representación compacta e interpretable | Coste elevado y dependencia de una estructura temática clara |
+| SG-NS | Neuronal | Embeddings densos de palabras y documentos | Captura relaciones distribucionales | Depende del corpus de entrenamiento y pierde orden al agregar palabras |
 
-### References
- - Blei, DM, AYNgiMIJordan(2003). “Latent Dirichlet Allocation”. A: Journal of Machine Learning Research 3.
- - Deerwester, Scott et al. (1990). “Indexing by latent semantic analysis”. A: Journal of the American society for information science 41.6, pàg. 391-407.
- -  Valle-Lisboa, Juan C i Eduardo Mizraji (2007). “The uncovering of hidden structures by latent semantic analysis”. A: Information sciences 177.19, pàg. 4122-4147.
+---
+
+## Fundamentos matemáticos
+
+### TF-IDF
+
+Para un término \(t\), un documento \(d\) y un corpus \(D\):
+
+\[
+\operatorname{tfidf}(t,d)
+=
+\operatorname{tf}(t,d)
+\cdot
+\operatorname{idf}(t,D)
+\]
+
+con
+
+\[
+\operatorname{tf}(t,d)
+=
+\frac{f(t,d)}
+{\max_{t' \in d} f(t',d)}
+\]
+
+e
+
+\[
+\operatorname{idf}(t,D)
+=
+\log
+\left(
+\frac{|D|}
+{|\{d \in D : t \in d\}|}
+\right).
+\]
+
+### LSA
+
+LSA parte de una matriz término-documento \(A\) y aplica la descomposición en valores singulares:
+
+\[
+A = U\Sigma V^\top.
+\]
+
+La representación reducida conserva las \(k\) componentes asociadas a los valores singulares más importantes:
+
+\[
+A_k = U_k\Sigma_kV_k^\top.
+\]
+
+Esta aproximación reduce el ruido y proyecta los documentos en un espacio semántico de menor dimensión.
+
+### LDA
+
+LDA representa cada documento mediante una distribución sobre \(K\) tópicos:
+
+\[
+\theta_d =
+(\theta_{d,1},\ldots,\theta_{d,K}),
+\]
+
+donde \(\theta_{d,k}\) es el peso del tópico \(k\) en el documento \(d\).
+
+La implementación manual utiliza **muestreo de Gibbs colapsado** para estimar las asignaciones de tópicos y las distribuciones documento-tópico y tópico-palabra.
+
+### SG-NS
+
+Skip-gram aprende embeddings de palabras prediciendo términos de contexto a partir de una palabra central. El muestreo negativo reemplaza el cálculo completo de `softmax` por una tarea de clasificación entre pares positivos y negativos.
+
+Para construir un vector documental se emplea una media ponderada por TF-IDF:
+
+\[
+v_D =
+\frac{
+\sum_{w \in D}
+\operatorname{tfidf}(w,D)\,v_w
+}{
+\sum_{w \in D}
+\operatorname{tfidf}(w,D)
+}.
+\]
+
+---
+
+## Conjuntos de datos
+
+### Sentiment140
+
+Corpus de mensajes breves de Twitter orientado al análisis de sentimiento.
+
+- Dataset original: **1.600.000 tuits**.
+- Clases: sentimiento positivo y negativo.
+- Muestra experimental balanceada: **20.000 documentos**.
+- Entrenamiento: **16.000 documentos**.
+- Evaluación: **4.000 documentos**.
+- Características: textos breves, informales, ruidosos y con poco contexto.
+
+### arXiv
+
+Instantánea de metadatos de artículos científicos.
+
+- Fuente textual: título y resumen.
+- Problema binario:
+  - `cs`: categoría principal perteneciente a Computer Science.
+  - `no_cs`: resto de áreas.
+- Muestra balanceada: **100.000 artículos**.
+- Características: documentos más largos, técnicos, formales y semánticamente densos.
+
+La combinación de ambos corpus permite comparar las representaciones en dos escenarios opuestos: lenguaje social breve frente a documentación científica especializada.
+
+---
+
+## Preprocesamiento
+
+Se aplica un procedimiento común para que las diferencias observadas dependan de la representación y no de tratamientos textuales distintos.
+
+El flujo incluye:
+
+1. conversión a minúsculas;
+2. eliminación de URL, etiquetas HTML y menciones;
+3. normalización de espacios;
+4. tokenización con spaCy;
+5. eliminación de puntuación y números;
+6. eliminación de stopwords;
+7. conservación explícita de negaciones;
+8. lematización;
+9. eliminación de documentos vacíos;
+10. comprobación de valores nulos y duplicados.
+
+---
+
+## Metodología experimental
+
+Todas las representaciones se evalúan bajo un protocolo común:
+
+1. preprocesamiento homogéneo;
+2. muestra balanceada;
+3. partición estratificada de entrenamiento y prueba;
+4. ajuste de la representación sobre entrenamiento;
+5. transformación del conjunto de prueba;
+6. clasificación mediante **Random Forest**;
+7. cálculo de métricas predictivas y computacionales;
+8. análisis de interpretabilidad y geometría.
+
+Se utiliza el mismo clasificador para aislar el efecto de la representación vectorial.
+
+### Métricas predictivas
+
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- AUC-ROC
+
+### Métricas computacionales y geométricas
+
+- tiempo de construcción;
+- tiempo de transformación;
+- tiempo de entrenamiento y predicción;
+- dimensionalidad;
+- sparsity;
+- memoria;
+- norma media;
+- similitud coseno intra-clase;
+- similitud coseno inter-clase;
+- distancia entre centroides;
+- entropía de las distribuciones de tópicos.
+
+---
+
+## Resultados principales
+
+> Los tiempos corresponden al entorno experimental utilizado y no deben interpretarse como benchmarks universales.
+
+### Sentiment140
+
+| Representación | Dim. | Accuracy | F1 | AUC-ROC | Tiempo representación (s) | Tiempo clasificador (s) | Sparsity |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| TF-IDF manual | 2435 | 0.7250 | 0.7250 | 0.7949 | 0.92 | 149.02 | 0.9980 |
+| LSA manual | 100 | 0.7163 | 0.7162 | 0.7797 | 51.46 | 22.06 | 0.0144 |
+| LDA manual | 10 | 0.5285 | 0.5280 | 0.5335 | 115.54 | 1.95 | 0.0000 |
+| SG-NS Wikipedia + TF-IDF | 100 | 0.6148 | 0.6146 | 0.6681 | 332.28 | 44.83 | 0.0000 |
+| SG-NS Sentiment140 + TF-IDF | 100 | 0.6968 | 0.6965 | 0.7624 | 31.85 | 19.89 | 0.0000 |
+
+**Conclusiones sobre Sentiment140:**
+
+- TF-IDF obtiene el mejor rendimiento global.
+- LSA conserva un rendimiento cercano con una representación mucho más compacta.
+- LDA presenta dificultades por la brevedad y el ruido de los tuits.
+- SG-NS mejora cuando los embeddings se entrenan sobre el propio dominio.
+- Las señales léxicas directas resultan especialmente importantes en clasificación de sentimiento.
+
+### arXiv
+
+| Representación | Dim. | Accuracy | F1 | AUC-ROC | Tiempo representación (s) | Tiempo clasificador (s) | Sparsity |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| TF-IDF manual | 5000 | 0.9200 | 0.9199 | 0.9692 | 1.97 | 49.22 | 0.9878 |
+| LSA manual | 100 | 0.9193 | 0.9192 | 0.9681 | 157.27 | 15.63 | 0.0000 |
+| LDA manual | 10 | 0.9118 | 0.9117 | 0.9647 | 1923.32 | 3.06 | 0.0000 |
+| SG-NS Wikipedia + TF-IDF | 100 | 0.8785 | 0.8785 | 0.9444 | 332.28 | 28.10 | 0.0000 |
+| SG-NS arXiv + TF-IDF | 100 | 0.9255 | 0.9255 | 0.9730 | 220.15 | 20.41 | 0.0000 |
+
+**Conclusiones sobre arXiv:**
+
+- TF-IDF, LSA y LDA obtienen resultados competitivos.
+- LSA mantiene un rendimiento similar a TF-IDF con mucha menor dimensionalidad.
+- LDA mejora respecto a Sentiment140 porque los documentos contienen una estructura temática más clara.
+- SG-NS entrenado sobre arXiv obtiene el mejor resultado global.
+- Los embeddings especializados superan a los embeddings generales de Wikipedia.
+
+---
+
+## Interpretabilidad
+
+El proyecto incluye diferentes estrategias de análisis:
+
+### TF-IDF
+
+- términos con mayor IDF;
+- términos relevantes por clase;
+- similitud coseno entre términos;
+- proyecciones PCA;
+- recuperación de documentos similares.
+
+### LSA
+
+- valores singulares;
+- energía acumulada;
+- términos con mayor peso por componente;
+- centroides de clase;
+- proyecciones bidimensionales;
+- reconstrucción aproximada del espacio de términos.
+
+### LDA
+
+- palabras principales por tópico;
+- distribución de tópicos por documento;
+- tópico dominante;
+- diferencias de peso entre clases;
+- entropía temática;
+- matrices documento-tópico y tópico-palabra.
+
+### SG-NS
+
+- palabras más cercanas;
+- similitud coseno;
+- proyecciones locales con PCA;
+- comparación entre embeddings generales y específicos;
+- construcción y recuperación de documentos mediante SG-NS + TF-IDF.
+
+---
+
+## Implementaciones manuales y librerías
+
+El repositorio incluye implementaciones propias de los métodos principales y comparaciones con versiones optimizadas.
+
+| Método | Implementación manual | Implementación de referencia |
+|---|---|---|
+| TF-IDF | Cálculo explícito de TF, IDF y matriz documental | `TfidfVectorizer` |
+| LSA | TF-IDF manual + SVD con NumPy | `TruncatedSVD` |
+| LDA | Muestreo de Gibbs colapsado | `LatentDirichletAllocation` |
+| SG-NS | Generación de pares, negative sampling y entrenamiento | TensorFlow / embeddings preentrenados |
+
+Las versiones manuales priorizan la correspondencia con la formulación matemática. Las implementaciones de librería son más eficientes gracias al uso de matrices dispersas, operaciones vectorizadas y algoritmos optimizados.
+
+---
+
+## Tecnologías
+
+- Python
+- NumPy
+- pandas
+- SciPy
+- scikit-learn
+- spaCy
+- TensorFlow
+- Matplotlib
+- tqdm
+- Google Colab
+- Google Drive
+
+Los experimentos se ejecutaron principalmente en Google Colab. Cuando estuvo disponible, se utilizó una **NVIDIA Tesla T4 de 16 GB**, aunque varias etapas —como el preprocesamiento, la construcción del vocabulario y el cálculo de frecuencias— dependen principalmente de CPU y memoria.
+
+---
+
+## Instalación
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd <NOMBRE_DEL_REPOSITORIO>
+
+python -m venv .venv
+source .venv/bin/activate
+```
+
+En Windows:
+
+```powershell
+.venv\Scripts\activate
+```
+
+Instalación de las dependencias principales:
+
+```bash
+pip install numpy pandas scipy scikit-learn spacy tensorflow matplotlib tqdm adjustText
+python -m spacy download en_core_web_sm
+```
+
+---
+
+## Ejecución
+
+El flujo recomendado es:
+
+1. descargar o preparar los datasets;
+2. adaptar las rutas de entrada y salida;
+3. ejecutar el preprocesamiento;
+4. generar las representaciones;
+5. entrenar el clasificador;
+6. evaluar las métricas;
+7. ejecutar los análisis de interpretabilidad.
+
+Notebooks principales desarrollados durante el proyecto:
+
+```text
+Copia_de_sentiment_140_preprocess.ipynb
+Sentiment140_vectors.ipynb
+arxiv_representation.ipynb
+```
+
+Al utilizar Google Colab, revisa las rutas configuradas con el patrón:
+
+```python
+/content/drive/MyDrive/TFM/
+```
+
+---
+
+## Reproducibilidad
+
+Para favorecer comparaciones homogéneas:
+
+- se utilizan semillas aleatorias fijas;
+- las muestras se balancean por clase;
+- la división de entrenamiento y prueba es estratificada;
+- se reutiliza el mismo clasificador;
+- se mantienen las mismas particiones al comparar representaciones;
+- los tiempos de representación y clasificación se registran por separado.
+
+Los resultados pueden variar según:
+
+- hardware;
+- versión de las librerías;
+- tamaño del corpus;
+- disponibilidad de GPU;
+- dimensionalidad;
+- hiperparámetros;
+- estado de la instantánea de arXiv.
+
+---
+
+## Principales conclusiones
+
+1. No existe una representación universalmente superior.
+2. TF-IDF es una referencia muy competitiva para textos breves y señales léxicas directas.
+3. LSA ofrece un buen equilibrio entre rendimiento y reducción dimensional.
+4. LDA resulta más útil cuando los documentos tienen suficiente longitud y coherencia temática.
+5. SG-NS depende fuertemente del dominio usado para entrenar los embeddings.
+6. Los embeddings especializados pueden superar a los entrenados sobre corpus generales.
+7. La eficiencia debe evaluarse sobre el pipeline completo, no solo sobre la construcción de la representación.
+8. La interpretabilidad adopta formas diferentes en cada método.
+9. Las implementaciones manuales facilitan la comprensión, pero no igualan la eficiencia de librerías optimizadas.
+
+---
+
+## Limitaciones
+
+- La evaluación se centra en Sentiment140 y arXiv.
+- Las tareas se simplifican a clasificación binaria.
+- Se utiliza un único clasificador supervisado.
+- Las implementaciones manuales priorizan claridad frente a eficiencia.
+- La agregación de embeddings pierde información sobre el orden de las palabras.
+- Las proyecciones PCA en dos dimensiones son exploratorias y no representan toda la estructura del espacio original.
+
+---
+
+## Líneas futuras
+
+- evaluación en otros dominios e idiomas;
+- clasificación multiclase y multietiqueta;
+- recuperación de información y clustering;
+- comparación con RNN, LSTM y GRU;
+- incorporación de BERT y arquitecturas Transformer;
+- embeddings contextuales;
+- búsqueda sistemática de hiperparámetros;
+- comparación con otros clasificadores;
+- estudio de representaciones que preserven la estructura secuencial.
+
+---
+
+## Referencias
+
+El marco teórico se apoya, entre otros, en los trabajos fundacionales de:
+
+- Salton et al. sobre el modelo vectorial y TF-IDF.
+- Deerwester et al. sobre Latent Semantic Analysis.
+- Blei, Ng y Jordan sobre Latent Dirichlet Allocation.
+- Mikolov et al. sobre Skip-gram y Negative Sampling.
+- Go, Bhayani y Huang sobre Sentiment140.
+
+La bibliografía completa se encuentra en el documento académico asociado al proyecto.
+
+---
+
+## Uso académico
+
+Este repositorio acompaña un trabajo académico centrado en la relación entre:
+
+- formulación matemática;
+- implementación computacional;
+- rendimiento predictivo;
+- coste;
+- dimensionalidad;
+- geometría;
+- interpretabilidad.
+
+Al reutilizar código, resultados o figuras, se recomienda citar el trabajo y las fuentes originales de los datasets y algoritmos.
