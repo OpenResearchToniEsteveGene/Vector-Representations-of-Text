@@ -64,13 +64,11 @@ Los objetivos específicos son:
 Para un término $t$, un documento $d$ y un corpus $D$:
 
 $$
-
-\operatorname{tfidf}(t,d)
+tfidf(t,d)
 =
 \operatorname{tf}(t,d)
 \cdot
 \operatorname{idf}(t,D)
-
 $$
 
 con
