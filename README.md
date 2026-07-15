@@ -114,7 +114,7 @@ Skip-gram aprende embeddings de palabras prediciendo términos de contexto a par
 Para construir un vector documental se emplea una media ponderada por TF-IDF:
 
 $$
-v_D =\frac{\sum_{w \in D}tfidf(w,D)\,v_w}{\sum_{w \in D}\operatorname{tfidf}(w,D)}.
+v_D =\frac{\sum_{w \in D}tfidf(w,D)\,v_w}{\sum_{w \in D}tfidf(w,D)}.
 $$
 
 ---
